@@ -15,12 +15,11 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(name: "UIKitEx", url: "https://github.com/RocketLaunchpad/UIKitEx.git", .branch("main"))
     ],
     targets: [
         .target(
             name: "SwiftUIEx",
-            dependencies: ["UIKitEx"]
+            dependencies: []
         )
     ]
 )
