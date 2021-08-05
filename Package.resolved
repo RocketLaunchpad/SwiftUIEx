@@ -1,0 +1,52 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CombineEx",
+        "repositoryURL": "https://github.com/RocketLaunchpad/CombineEx.git",
+        "state": {
+          "branch": null,
+          "revision": "f77496af0df6563525ae3e432d4a3fa894a6b4e1",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "FoundationEx",
+        "repositoryURL": "https://github.com/RocketLaunchpad/FoundationEx.git",
+        "state": {
+          "branch": null,
+          "revision": "76570c0269d7e8622435efce85b49b5132dbeb71",
+          "version": "1.0.1"
+        }
+      },
+      {
+        "package": "ReducerArchitecture",
+        "repositoryURL": "https://github.com/RocketLaunchpad/ReducerArchitecture.git",
+        "state": {
+          "branch": null,
+          "revision": "99d9d0908a2e1558b34232a88f88acd870838148",
+          "version": "1.1.1"
+        }
+      },
+      {
+        "package": "swift-tagged",
+        "repositoryURL": "https://github.com/pointfreeco/swift-tagged.git",
+        "state": {
+          "branch": null,
+          "revision": "6c36cf66f58553d0481a2628e3e27177f698a897",
+          "version": "0.6.0"
+        }
+      },
+      {
+        "package": "UIKitEx",
+        "repositoryURL": "https://github.com/RocketLaunchpad/UIKitEx.git",
+        "state": {
+          "branch": "main",
+          "revision": "d0b2069b977f5c9059f05e6b8e31533a01605785",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
