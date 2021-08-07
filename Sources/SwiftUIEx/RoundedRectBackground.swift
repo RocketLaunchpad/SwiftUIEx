@@ -1,8 +1,8 @@
 //
-//  File.swift
-//  File
+//  RoundedRectBackground.swift
+//  Rocket Insights
 //
-//  Created by Ilya Belenkiy on 8/5/21.
+//  Created by Ilya Belenkiy on 8/6/21.
 //
 
 import SwiftUI
@@ -11,19 +11,19 @@ public struct RoundedRectBackground: ViewModifier {
     enum RadiusTag {}
     typealias RadiusKey = MeasurementKey<CGFloat, RadiusTag>
 
-    struct ContainerView<C: View>: View {
+    struct Container<C: View>: View {
         @State var cornerRadius: CGFloat?
 
         let content: C
         let fillColor: Color
         let borderColor: Color
-        let borderWith: CGFloat
+        let borderWidth: CGFloat
 
         var body: some View {
             let shape = RoundedRectangle(cornerRadius: cornerRadius ?? 0)
             return content.background(shape.fill(fillColor))
                 .clipShape(shape)
-                .overlay(shape.stroke(borderColor, lineWidth: borderWith))
+                .overlay(shape.stroke(borderColor, lineWidth: borderWidth))
                 .onPreferenceChange(RadiusKey.self) {
                     cornerRadius = $0
                 }
@@ -38,10 +38,10 @@ public struct RoundedRectBackground: ViewModifier {
     let fillColor: Color
     let borderColor: Color
     let cornerRadius: CornerRadius
-    let borderWith: CGFloat
+    let borderWidth: CGFloat
 
     public func body(content: Content) -> some View {
-        ContainerView(
+        Container(
             content: content.measurement(RadiusKey.self) { proxy in
                 switch cornerRadius {
                 case .value(let value):
@@ -52,7 +52,7 @@ public struct RoundedRectBackground: ViewModifier {
             },
             fillColor: fillColor,
             borderColor: borderColor,
-            borderWith: borderWith
+            borderWidth: borderWidth
         )
     }
 }
@@ -62,7 +62,7 @@ public extension View {
         fillColor: Color = .clear,
         borderColor: Color = .clear,
         cornerRadius: RoundedRectBackground.CornerRadius = .max,
-        borderWith: CGFloat = 0
+        borderWidth: CGFloat = 0
     )
     -> some View
     {
@@ -70,7 +70,7 @@ public extension View {
             fillColor: fillColor,
             borderColor: borderColor,
             cornerRadius: cornerRadius,
-            borderWith: borderWith
+            borderWidth: borderWidth
         )
         return modifier(view)
     }

@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SwiftUIEx",
     platforms: [
-        .macOS(.v11), .iOS(.v13)
+        .macOS(.v11), .iOS(.v14)
     ],
     products: [
         .library(

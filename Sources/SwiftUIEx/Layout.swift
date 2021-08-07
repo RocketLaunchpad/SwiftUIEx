@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  File
+//  Layout.swift
+//  Rocket Insights
 //
 //  Created by Ilya Belenkiy on 8/5/21.
 //
