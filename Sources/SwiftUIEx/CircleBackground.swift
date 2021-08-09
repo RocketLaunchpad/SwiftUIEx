@@ -22,10 +22,10 @@ public struct CircleBackground: ViewModifier {
         var body: some View {
             let shape = Circle()
             return content
+                .frame(width: radius.map { 2 * $0 }, height: radius.map { 2 * $0})
                 .background(shape.fill(fillColor))
                 .overlay(shape.stroke(borderColor, lineWidth: borderWidth))
                 .clipShape(shape)
-                .frame(width: radius.map { 2 * $0 }, height: radius.map { 2 * $0})
                 .onPreferenceChange(MaxSideLengthKey.self) {
                     if let sideLength = $0 {
                         radius = sideLength / 2.0
