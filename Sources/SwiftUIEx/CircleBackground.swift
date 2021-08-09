@@ -20,14 +20,16 @@ public struct CircleBackground: ViewModifier {
         let borderWidth: CGFloat
 
         var body: some View {
-            let r = radius ?? 0
             let shape = Circle()
             return content
-                .frame(width: 2.0 * r, height: 2.0 * r)
                 .background(shape.fill(fillColor))
                 .overlay(shape.stroke(borderColor, lineWidth: borderWidth))
+                .clipShape(shape)
+                .frame(width: radius.map { 2 * $0 }, height: radius.map { 2 * $0})
                 .onPreferenceChange(MaxSideLengthKey.self) {
-                    radius = ($0 ?? 0) / 2.0
+                    if let sideLength = $0 {
+                        radius = sideLength / 2.0
+                    }
                 }
         }
     }

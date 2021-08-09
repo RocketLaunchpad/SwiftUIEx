@@ -21,9 +21,10 @@ public struct RoundedRectBackground: ViewModifier {
 
         var body: some View {
             let shape = RoundedRectangle(cornerRadius: cornerRadius ?? 0)
-            return content.background(shape.fill(fillColor))
-                .clipShape(shape)
+            return content
+                .background(shape.fill(fillColor))
                 .overlay(shape.stroke(borderColor, lineWidth: borderWidth))
+                .clipShape(shape)
                 .onPreferenceChange(RadiusKey.self) {
                     cornerRadius = $0
                 }

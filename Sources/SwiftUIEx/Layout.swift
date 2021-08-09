@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+public let minTappableRectSide: CGFloat = 44
+
 public struct MeasurementKey<Value, Tag>: PreferenceKey {
     public static var defaultValue: Value? { nil }
     public static func reduce(value: inout Value?, nextValue: () -> Value?) {
