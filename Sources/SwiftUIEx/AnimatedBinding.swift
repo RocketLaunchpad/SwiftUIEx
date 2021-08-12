@@ -21,10 +21,10 @@ public func withAnimation<Result>(_ animation: Animation? = .default, while valu
 public struct Animated<ContentView: View>: View {
     @Binding var binding: Bool
     @State private var value: Bool
-    private var animation: Animation
-    private var content: (Bool) -> ContentView
+    private let animation: (Bool) -> Animation
+    private let content: (Bool) -> ContentView
 
-    init(_ binding: Binding<Bool>, with animation: Animation, content: @escaping (Bool) -> ContentView) {
+    public init(_ binding: Binding<Bool>, with animation: @escaping (Bool) -> Animation, @ViewBuilder content: @escaping (Bool) -> ContentView) {
         _binding = binding
         self.value = _binding.wrappedValue
         self.animation = animation
@@ -34,7 +34,7 @@ public struct Animated<ContentView: View>: View {
     public var body: some View {
         content(value)
             .onChange(of: binding) { value in
-                withAnimation(animation) {
+                withAnimation(animation(value)) {
                     self.value = value
                 }
             }
