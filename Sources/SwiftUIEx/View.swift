@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-extension View {
+public extension View {
     func sideEffect(_ f: () -> Void) -> Self {
         f()
         return self
