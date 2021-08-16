@@ -19,7 +19,16 @@ public struct Selection<T> {
 
 public protocol CollectionCell: View {
     associatedtype T
+    var index: Int { get }
+    var value: T { get }
+    var selectionIndex: Int? { get }
     init(index: Int, value: T, selection: Binding<Selection<T>?>)
+}
+
+extension CollectionCell {
+    public var isSelected: Bool {
+        selectionIndex == index
+    }
 }
 
 public struct Collection<Cell: CollectionCell>: View {
@@ -27,10 +36,18 @@ public struct Collection<Cell: CollectionCell>: View {
     public let content: [T]
     public var selection: Binding<Selection<T>?>
 
+    public let columnCount: Int
     public let cellMinWidth: CGFloat
     public var spacing: CGFloat?
 
-    public init(content: [T], selection: Binding<Selection<T>?>, cellMinWidth: CGFloat = minTappableRectSide, spacing: CGFloat? = nil) {
+    public init(
+        columnCount: Int = 1,
+        content: [T],
+        selection: Binding<Selection<T>?>,
+        cellMinWidth: CGFloat = minTappableRectSide,
+        spacing: CGFloat? = nil
+    ) {
+        self.columnCount = columnCount
         self.content = content
         self.selection = selection
         self.cellMinWidth = cellMinWidth
@@ -38,9 +55,19 @@ public struct Collection<Cell: CollectionCell>: View {
     }
 
     public var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: cellMinWidth))]) {
-            ForEach(content.indices) { index in
-                Cell(index: index, value: content[index], selection: selection)
+        if columnCount == 1 {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: cellMinWidth))]) {
+                ForEach(content.indices) { index in
+                    Cell(index: index, value: content[index], selection: selection)
+                }
+            }
+        }
+        else {
+            let columns = Array(repeating: GridItem(.flexible()), count: columnCount)
+            LazyVGrid(columns: columns) {
+                ForEach(content.indices) { index in
+                    Cell(index: index, value: content[index], selection: selection)
+                }
             }
         }
     }

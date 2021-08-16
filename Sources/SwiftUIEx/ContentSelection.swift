@@ -36,3 +36,24 @@ public extension View {
         modifier(AccentColorSelection(isSelected: isSelected, cornerRadius: cornerRadius))
     }
 }
+
+public struct UnderlineSelection: ViewModifier {
+    public let isSelected: Bool
+    public var color: Color
+    public var thickness: CGFloat
+
+    public func body(content: Content) -> some View {
+        content
+            .padding(EdgeInsets(top: 0, leading: 0, bottom: thickness, trailing: 0))
+            .background(
+                Rectangle().fill(isSelected ? color : .clear).frame(height: thickness),
+                alignment: .bottom
+            )
+    }
+}
+
+public extension View {
+    func underlineSelection(isSelected: Bool, color: Color = .primary, thickness: CGFloat = 2) -> some View {
+        modifier(UnderlineSelection(isSelected: isSelected, color: color, thickness: thickness))
+    }
+}
