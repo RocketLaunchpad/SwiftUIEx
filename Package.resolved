@@ -1,0 +1,34 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CombineEx",
+        "repositoryURL": "https://github.com/RocketLaunchpad/CombineEx.git",
+        "state": {
+          "branch": "main",
+          "revision": "8fe565531ca8ef1bf52dbf47b58bfef948bb811d",
+          "version": null
+        }
+      },
+      {
+        "package": "FoundationEx",
+        "repositoryURL": "https://github.com/RocketLaunchpad/FoundationEx.git",
+        "state": {
+          "branch": "main",
+          "revision": "f5b33f368c679306483bda31a493bc8fe597848d",
+          "version": null
+        }
+      },
+      {
+        "package": "swift-tagged",
+        "repositoryURL": "https://github.com/pointfreeco/swift-tagged.git",
+        "state": {
+          "branch": null,
+          "revision": "6c36cf66f58553d0481a2628e3e27177f698a897",
+          "version": "0.6.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

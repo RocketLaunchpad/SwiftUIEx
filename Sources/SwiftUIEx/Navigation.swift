@@ -23,6 +23,10 @@ public extension NavigationItemContent {
         NavigationItemView(self, next: next)
     }
 
+    func thenDetails<V: View>(@ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V) -> NavigationItemView<Self, V> {
+        NavigationItemView(self, linksToDetails: true, next: next)
+    }
+
     func endFlow(with sideEffect: (() -> Void)? = nil) -> NavigationItemView<Self, EmptyView> {
         NavigationItemView(self, sideEffect: sideEffect)
     }
@@ -38,12 +42,14 @@ public class AnyNavigationItem: ObservableObject {
 
 public class NavigationItem<Content: NavigationItemContent>: AnyNavigationItem {
     public let content: Content
+    public let linksToDetails: Bool
     private var subscriptions = Set<AnyCancellable>()
 
     @Published var value: Content.Value?
 
-    public init(_ content: Content, sideEffect: (() -> Void)? = nil) {
+    public init(_ content: Content, linksToDetails: Bool, sideEffect: (() -> Void)? = nil) {
         self.content = content
+        self.linksToDetails = linksToDetails
         super.init()
 
         content.value.replaceErrorWithNil()
@@ -60,8 +66,8 @@ public struct NavigationItemView<Content: NavigationItemContent, NextView: View>
     @ObservedObject public var navigationItem: NavigationItem<Content>
     public let nextView: (Content.Value, AnyNavigationItem) -> NextView
 
-    public init(_ content: Content, @ViewBuilder next: @escaping (Content.Value, AnyNavigationItem) -> NextView) {
-        self.navigationItem = NavigationItem(content)
+    public init(_ content: Content, linksToDetails: Bool = false, @ViewBuilder next: @escaping (Content.Value, AnyNavigationItem) -> NextView) {
+        self.navigationItem = NavigationItem(content, linksToDetails: linksToDetails)
         self.nextView = next
     }
 
@@ -84,6 +90,7 @@ public struct NavigationItemView<Content: NavigationItemContent, NextView: View>
                     isActive: $navigationItem.linkIsActive,
                     label: { EmptyView() }
                 )
+                .isDetailLink(navigationItem.linksToDetails)
             }
         }
     }
@@ -91,7 +98,7 @@ public struct NavigationItemView<Content: NavigationItemContent, NextView: View>
 
 public extension NavigationItemView where NextView == EmptyView {
     init(_ content: Content, sideEffect: (() -> Void)? = nil) {
-        self.navigationItem = NavigationItem(content, sideEffect: sideEffect)
+        self.navigationItem = NavigationItem(content, linksToDetails: false, sideEffect: sideEffect)
         self.nextView = { _, _ in EmptyView() }
     }
 }
