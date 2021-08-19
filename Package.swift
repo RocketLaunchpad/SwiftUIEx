@@ -15,11 +15,12 @@ let package = Package(
         )
     ],
     dependencies: [
+        .package(name: "CombineEx", url: "https://github.com/RocketLaunchpad/CombineEx.git", .branch("main"))
     ],
     targets: [
         .target(
             name: "SwiftUIEx",
-            dependencies: []
+            dependencies: ["CombineEx"]
         )
     ]
 )
