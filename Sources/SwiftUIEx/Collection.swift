@@ -7,27 +7,16 @@
 
 import SwiftUI
 
-public struct Selection<T> {
-    public let index: Int
-    public let value: T
-
-    public init(index: Int, value: T) {
-        self.index = index
-        self.value = value
-    }
-}
-
 public protocol CollectionCell: View {
-    associatedtype T
-    var index: Int { get }
+    associatedtype T: Identifiable
     var value: T { get }
-    var selectionIndex: Int? { get }
-    init(index: Int, value: T, selection: Binding<Selection<T>?>)
+    var selection: T? { get }
+    init(value: T, selection: Binding<T?>)
 }
 
 extension CollectionCell {
     public var isSelected: Bool {
-        selectionIndex == index
+        selection?.id == value.id
     }
 }
 
@@ -42,7 +31,7 @@ public struct Collection<Cell: CollectionCell>: View {
 
     public typealias T = Cell.T
     public let content: [T]
-    public var selection: Binding<Selection<T>?>
+    public var selection: Binding<T?>
 
     public let cellWidth: CellWidth
     public let columnCount: Int?
@@ -77,7 +66,7 @@ public struct Collection<Cell: CollectionCell>: View {
 
     public init(
         content: [T],
-        selection: Binding<Selection<T>?>,
+        selection: Binding<T?>,
         columnCount: Int? = nil,
         columnSpacing: CGFloat? = nil,
         rowSpacing: CGFloat? = nil,
@@ -109,8 +98,8 @@ public struct Collection<Cell: CollectionCell>: View {
     public var body: some View {
         let columns = Array(repeating: gridItem, count: columnCount ?? 1)
         LazyVGrid(columns: columns, spacing: rowSpacing) {
-            ForEach(content.indices) { index in
-                Cell(index: index, value: content[index], selection: selection)
+            ForEach(content) {
+                Cell(value: $0, selection: selection)
             }
         }
         .measurement(ContentWidthKey.self) { $0.size.width }
