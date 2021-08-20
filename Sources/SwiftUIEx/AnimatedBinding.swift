@@ -18,15 +18,15 @@ public func withAnimation<Result>(_ animation: Animation? = .default, while valu
     return try withAnimation(animation.repeat(while: value), body)
 }
 
-public struct Animated<ContentView: View>: View {
-    @Binding var binding: Bool
-    @State private var value: Bool
-    private let animation: (Bool) -> Animation
-    private let content: (Bool) -> ContentView
+public struct Animated<ContentView: View, T: Equatable>: View {
+    @Binding var binding: T
+    @State private var value: T
+    private var animation: (T) -> Animation
+    private var content: (T) -> ContentView
 
-    public init(_ binding: Binding<Bool>, with animation: @escaping (Bool) -> Animation, @ViewBuilder content: @escaping (Bool) -> ContentView) {
-        _binding = binding
-        self.value = _binding.wrappedValue
+    public init(_ binding: Binding<T>, with animation: @escaping (T) -> Animation, @ViewBuilder content: @escaping (T) -> ContentView) {
+        self._binding = binding
+        self._value = State(initialValue: binding.wrappedValue)
         self.animation = animation
         self.content = content
     }
