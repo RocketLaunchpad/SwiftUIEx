@@ -18,18 +18,17 @@ extension UIColor {
         var blue: CGFloat = 0
         var alpha: CGFloat = 0
         self.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        return .init(red: red, green: green, blue: blue, opacity: alpha)
+        return .init(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
     }
 }
 
 public extension Color {
     init(_uiColor: UIColor) {
-        if #available(iOS 15.0, *) {
-            self = Color(uiColor: _uiColor)
-        }
-        else {
-            self = _uiColor.swiftUIcolor
-        }
+        #if swift(>=5.5) // should be #if available, but Xcode 12 cannot handle it
+        self = Color(uiColor: _uiColor)
+        #else
+        self = _uiColor.swiftUIcolor
+        #endif
     }
 
     init(hex: String) {
@@ -38,7 +37,7 @@ public extension Color {
             self = .clear
             return
         }
-        self.init(red: red, green: green, blue: blue, opacity: alpha)
+        self.init(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
     }
 
     static var systemGray2: Self { .init(_uiColor: .systemGray2) }
