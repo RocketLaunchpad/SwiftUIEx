@@ -24,16 +24,11 @@ public struct Collection<Cell: CollectionCell>: View {
     enum ContentWidthTag {}
     typealias ContentWidthKey = MeasurementKey<CGFloat, ContentWidthTag>
 
-    public enum CellWidth {
-        case fixed(CGFloat)
-        case min(CGFloat)
-    }
-
     public typealias T = Cell.T
     public let content: [T]
     public var selection: Binding<T?>
 
-    public let cellWidth: CellWidth
+    public let cellWidth: CGFloat?
     public let columnCount: Int?
     public let columnSpacing: CGFloat?
     public let rowSpacing: CGFloat?
@@ -42,25 +37,24 @@ public struct Collection<Cell: CollectionCell>: View {
 
     @State private var contentWidth: CGFloat?
 
-    func evalContentWidth(availableWidth: CGFloat) -> CGFloat? {
+    func evalContentWidth(availableWidth: CGFloat) -> CGFloat {
+        guard let cellWidth = cellWidth else {
+            return availableWidth
+        }
+
         func width(columnCount: Int, cellWidth: CGFloat) -> CGFloat {
             CGFloat(columnCount) * cellWidth + CGFloat(columnCount - 1) * (columnSpacing ?? 0)
         }
 
-        switch cellWidth {
-        case .fixed(let value):
-            if let count = columnCount {
-                return width(columnCount: count, cellWidth: value)                
-            }
-            else {
-                let w = availableWidth
-                let d1 = value
-                let d2 = columnSpacing ?? 0
-                // c * d1 + (c-1) * d2 <= w
-                return width(columnCount: Int(floor((w + d2) / (d1 + d2))), cellWidth: value)
-            }
-        case .min:
-            return nil
+        if let count = columnCount {
+            return width(columnCount: count, cellWidth: cellWidth)
+        }
+        else {
+            let w = availableWidth
+            let d1 = cellWidth
+            let d2 = columnSpacing ?? 0
+            // c * d1 + (c-1) * d2 <= w
+            return width(columnCount: Int(floor((w + d2) / (d1 + d2))), cellWidth: cellWidth)
         }
     }
 
@@ -70,28 +64,28 @@ public struct Collection<Cell: CollectionCell>: View {
         columnCount: Int? = nil,
         columnSpacing: CGFloat? = nil,
         rowSpacing: CGFloat? = nil,
-        cellWidth: CellWidth? = nil
+        cellWidth: CGFloat? = nil
     ) {
         self.content = content
         self.selection = selection
 
-        self.cellWidth = cellWidth ?? .min(minTappableRectSide)
+        self.cellWidth = cellWidth
         self.columnCount = columnCount
         self.columnSpacing = columnSpacing
         self.rowSpacing = rowSpacing
 
-        switch self.cellWidth {
-        case .fixed(let value):
+        if let cellWidth = cellWidth {
             gridItem = GridItem(
-                columnCount != nil ? .fixed(value) : .adaptive(minimum: value, maximum: value),
+                columnCount != nil ? .fixed(cellWidth) : .adaptive(minimum: cellWidth, maximum: cellWidth),
                 spacing: columnSpacing
             )
-
-        case .min(let value):
-            gridItem = GridItem(
-                columnCount != nil ? .flexible(minimum: value) : .adaptive(minimum: value),
-                spacing: columnSpacing
-            )
+        }
+        else if columnCount != nil {
+            gridItem = GridItem(.flexible(), spacing: columnSpacing)
+        }
+        else {
+            assertionFailure("Expected either columnCount or cellWidth to not be nil")
+            gridItem = GridItem(.fixed(50))
         }
     }
 
