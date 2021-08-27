@@ -25,7 +25,12 @@ extension UIColor {
 public extension Color {
     init(_uiColor: UIColor) {
         #if swift(>=5.5) // should be #if available, but Xcode 12 cannot handle it
-        self = Color(uiColor: _uiColor)
+        if #available(iOS 15.0, *) {
+            self = Color(uiColor: _uiColor)
+        }
+        else {
+            self = _uiColor.swiftUIcolor
+        }
         #else
         self = _uiColor.swiftUIcolor
         #endif
