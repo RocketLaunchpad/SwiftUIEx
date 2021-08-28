@@ -10,7 +10,7 @@ import Combine
 import CombineEx
 import SwiftUI
 
-public protocol NavigationItemContent: AnyObject {
+public protocol NavigationItemContent {
     associatedtype ContentView: View
     associatedtype Value
 
