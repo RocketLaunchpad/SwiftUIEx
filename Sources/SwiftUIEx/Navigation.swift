@@ -32,19 +32,20 @@ public extension NavigationItemContent {
     }
 
     func thenPop(to item: AnyNavigationItem) -> some View {
-        endFlow { item.linkIsActive = false }
+        endFlow { item.deactivateLink() }
     }
 }
 
-public class AnyNavigationItem: ObservableObject {
-    @Published public var linkIsActive = false
+public class AnyNavigationItem {
+    func deactivateLink() {}
 }
 
-public class NavigationItem<Content: NavigationItemContent>: AnyNavigationItem {
+public final class NavigationItem<Content: NavigationItemContent>: AnyNavigationItem, ObservableObject {
     public let content: Content
     public let linksToDetails: Bool
     private var subscriptions = Set<AnyCancellable>()
 
+    @Published public var linkIsActive = false
     @Published var value: Content.Value?
 
     public init(_ content: Content, linksToDetails: Bool, sideEffect: (() -> Void)? = nil) {
@@ -59,6 +60,11 @@ public class NavigationItem<Content: NavigationItemContent>: AnyNavigationItem {
                 sideEffect?()
             }
             .store(in: &subscriptions)
+    }
+
+    override func deactivateLink() {
+        super.deactivateLink()
+        linkIsActive = false
     }
 }
 
