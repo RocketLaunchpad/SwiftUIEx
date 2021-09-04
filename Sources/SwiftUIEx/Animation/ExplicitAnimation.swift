@@ -86,6 +86,18 @@ public extension ExplicitAnimation.ProgressEvaluator {
             return 4.0 * (1 - x)
         }
     }
+
+    static let one_zero_one3: Self = .init { x in
+        if x < 1.0 / 4.0 {
+            return 1 - 4.0 * x
+        }
+        else if x < 3.0 / 4.0 {
+            return 0
+        }
+        else {
+            return 1 - 4.0 * (1 - x)
+        }
+    }
 }
 
 // MARK: Opacity
