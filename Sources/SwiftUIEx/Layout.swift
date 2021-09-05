@@ -32,4 +32,14 @@ public extension View {
     func measurement<Value, Tag>(_ keyType: MeasurementKey<Value, Tag>.Type, _ eval: @escaping (GeometryProxy) -> Value?) -> some View {
         modifier(Measurement<Value, Tag>(eval: eval))
     }
+
+    func measure<Value: Equatable, Tag>(
+        _ keyType: MeasurementKey<Value, Tag>.Type,
+        _ eval: @escaping (GeometryProxy) -> Value?,
+        save: @escaping (Value?) -> Void
+    )
+    -> some View
+    {
+        measurement(keyType, eval).onPreferenceChange(MeasurementKey<Value, Tag>.self, perform: save)
+    }
 }

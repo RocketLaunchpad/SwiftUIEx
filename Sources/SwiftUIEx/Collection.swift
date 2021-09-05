@@ -96,9 +96,8 @@ public struct Collection<Cell: CollectionCell>: View {
                 Cell(value: $0, selection: selection)
             }
         }
-        .measurement(ContentWidthKey.self) { $0.size.width }
-        .onPreferenceChange(ContentWidthKey.self) { width in
-            contentWidth = width.flatMap { evalContentWidth(availableWidth: $0) }
+        .measure(ContentWidthKey.self, { $0.size.width }) {
+            contentWidth = $0.flatMap { evalContentWidth(availableWidth: $0) }
         }
     }
 }
