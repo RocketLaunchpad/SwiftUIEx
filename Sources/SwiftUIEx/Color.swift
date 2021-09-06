@@ -42,7 +42,16 @@ public extension Color {
             self = .clear
             return
         }
-        self.init(red: Double(red), green: Double(green), blue: Double(blue), opacity: Double(alpha))
+        let uiColor = UIColor(dynamicProvider: {
+            switch $0.userInterfaceStyle {
+            case .dark:
+                return UIColor(red: 1.0 - red, green: 1.0 - green, blue: 1.0 - blue, alpha: alpha)
+            default:
+                return UIColor(red: red, green: green, blue: blue, alpha: alpha)
+            }
+        })
+
+        self.init(uiColor)
     }
 
     static var systemGray2: Self { .init(_uiColor: .systemGray2) }
