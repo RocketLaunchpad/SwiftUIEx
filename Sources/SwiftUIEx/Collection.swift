@@ -96,8 +96,9 @@ public struct Collection<Cell: CollectionCell>: View {
                 Cell(value: $0, selection: selection)
             }
         }
-        .measure(ContentWidthKey.self, { $0.size.width }) {
+        .measureWidth(ContentWidthKey.self) {
             contentWidth = $0.flatMap { evalContentWidth(availableWidth: $0) }
         }
+        .frame(idealWidth: contentWidth)
     }
 }

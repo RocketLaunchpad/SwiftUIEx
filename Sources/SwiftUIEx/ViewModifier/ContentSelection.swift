@@ -44,7 +44,7 @@ public struct UnderlineSelection: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .padding(EdgeInsets(top: 0, leading: 0, bottom: thickness, trailing: 0))
+            .padding(.bottom, thickness)
             .background(
                 Rectangle().fill(isSelected ? color : .clear).frame(height: thickness),
                 alignment: .bottom

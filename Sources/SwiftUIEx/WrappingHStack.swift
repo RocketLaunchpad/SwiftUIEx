@@ -121,7 +121,7 @@ public struct WrappingHStack<Data, Cell>: View where Data: RandomAccessCollectio
             ForEach(data) { element in
                 cellFunc(element)
                     .fixedSize()
-                    .measure(SizeKey.self, { $0.size }) {
+                    .measureSize(SizeKey.self) {
                         cellSizes[element.id] = $0
                     }
                     .hidden()
@@ -139,7 +139,7 @@ public struct WrappingHStack<Data, Cell>: View where Data: RandomAccessCollectio
                 .frame(width: layout.contentWidth, height: layout.contentHeight)
             }
         }
-        .measure(ContentWidthKey.self, { $0.size.width }) {
+        .measureWidth(ContentWidthKey.self) {
             availableWidth = $0
         }
     }
