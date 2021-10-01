@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Tagged
 
 public struct WrappingHStack<Data, Cell>: View where Data: RandomAccessCollection, Data.Element: Identifiable, Cell: View {
     enum ContentWidthTag {}
@@ -56,7 +57,7 @@ public struct WrappingHStack<Data, Cell>: View where Data: RandomAccessCollectio
             contentWidth = max(contentWidth, offsetX)
             offsetX = 0
 
-            let toRowSpacing = (row.first.id == data.first.id) ? 0 : rowSpacing
+            let toRowSpacing = (row.first?.id == data.first?.id) ? 0 : rowSpacing
             offsetY += toRowSpacing
             contentHeight = offsetY + rowHeight
 
