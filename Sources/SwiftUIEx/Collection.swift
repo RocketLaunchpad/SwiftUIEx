@@ -35,29 +35,6 @@ public struct Collection<Cell: CollectionCell>: View {
 
     private let gridItem: GridItem
 
-    @State private var contentWidth: CGFloat?
-
-    func evalContentWidth(availableWidth: CGFloat) -> CGFloat {
-        guard let cellWidth = cellWidth else {
-            return availableWidth
-        }
-
-        func width(columnCount: Int, cellWidth: CGFloat) -> CGFloat {
-            CGFloat(columnCount) * cellWidth + CGFloat(columnCount - 1) * (columnSpacing ?? 0)
-        }
-
-        if let count = columnCount {
-            return width(columnCount: count, cellWidth: cellWidth)
-        }
-        else {
-            let w = availableWidth
-            let d1 = cellWidth
-            let d2 = columnSpacing ?? 0
-            // c * d1 + (c-1) * d2 <= w
-            return width(columnCount: Int(floor((w + d2) / (d1 + d2))), cellWidth: cellWidth)
-        }
-    }
-
     public init(
         content: [T],
         selection: Binding<T?>,
@@ -96,9 +73,5 @@ public struct Collection<Cell: CollectionCell>: View {
                 Cell(value: $0, selection: selection)
             }
         }
-        .measureWidth(ContentWidthKey.self) {
-            contentWidth = $0.flatMap { evalContentWidth(availableWidth: $0) }
-        }
-        .frame(idealWidth: contentWidth)
     }
 }
