@@ -69,7 +69,7 @@ public struct BottomHintView: View {
     }
 }
 
-struct HintView_Previews: PreviewProvider {
+private struct HintView_Previews: PreviewProvider {
     private struct Container: View {
         @State private var show = true
 

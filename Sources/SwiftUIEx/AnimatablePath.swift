@@ -49,7 +49,7 @@ public struct AnimatablePath: View {
     }
 }
 
-struct AnimatablePath_Previews: PreviewProvider {
+private struct AnimatablePath_Previews: PreviewProvider {
     private struct Container: View {
         static let checkMark: Path = {
             let rect = CGRect(x: 0, y: 0, width: 30, height: 30)
