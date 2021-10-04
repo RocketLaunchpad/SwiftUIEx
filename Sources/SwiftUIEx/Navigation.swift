@@ -16,6 +16,14 @@ public protocol NavigationItemContent {
 
     func makeView() -> ContentView
     var value: AnyPublisher<Value, Cancel> { get }
+
+    func canActivateLink(_ value: Value) -> Bool
+}
+
+public extension NavigationItemContent {
+    func canActivateLink(_ value: Value) -> Bool {
+        true
+    }
 }
 
 public extension NavigationItemContent {
@@ -38,6 +46,11 @@ public extension NavigationItemContent {
 
 public class AnyNavigationItem {
     func deactivateLink() {}
+
+    public func popToSelf() -> EmptyView {
+        deactivateLink()
+        return EmptyView()
+    }
 }
 
 public final class NavigationItem<Content: NavigationItemContent>: AnyNavigationItem, ObservableObject {
@@ -56,7 +69,9 @@ public final class NavigationItem<Content: NavigationItemContent>: AnyNavigation
         content.value.replaceErrorWithNil()
             .sink { [unowned self] in
                 value = $0
-                linkIsActive = true
+                if let value = value {
+                    linkIsActive = self.content.canActivateLink(value)
+                }
                 sideEffect?()
             }
             .store(in: &subscriptions)
