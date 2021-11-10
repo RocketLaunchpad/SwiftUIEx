@@ -10,7 +10,7 @@ import Combine
 import CombineEx
 import SwiftUI
 
-public protocol NavigationItemContent {
+public protocol NavigationItemContent: Identifiable {
     associatedtype ContentView: View
     associatedtype Value
 
@@ -41,6 +41,53 @@ public extension NavigationItemContent {
 
     func thenPop(to item: AnyNavigationItem) -> some View {
         endFlow { item.deactivateLink() }
+    }
+
+    func done(_ done: @escaping (Value?) -> Void) -> NavigationItemView<Self, EmptyView> {
+        NavigationItemView(self, done: done)
+    }
+}
+
+// The sheet content may have the same structural identity, which would lead to showing the same data model
+// (or a reducer store) for the sheet every time the sheet is presented if `navContent` was a value.
+// The closure type for `navContent` helps ensure that the sheet model is new on every presentation.
+public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifier {
+    let isPresented: Binding<Bool>
+    let navContent: () -> NavItemContent
+    let done: (NavItemContent.Value) -> Void
+
+    // https://stackoverflow.com/questions/60485329/swiftui-modal-presentation-works-only-once-from-navigationbaritems
+    @State private var contentID = UUID()
+
+    init(isPresented: Binding<Bool>, content: @escaping () -> NavItemContent, done: @escaping (NavItemContent.Value) -> Void) {
+        self.isPresented = isPresented
+        navContent = content
+        self.done = done
+    }                                                       
+
+    public func body(content: Content) -> some View {
+        content
+            .id(contentID)
+            .sheet(isPresented: isPresented) {
+                navContent().done { value in
+                    contentID = UUID()
+                    isPresented.wrappedValue = false
+                    if let value = value {
+                        done(value)
+                    }
+                }
+            }
+    }
+}
+
+public extension View {
+    func sheet<NavItemContent: NavigationItemContent>(
+        isPresented: Binding<Bool>,
+        content: @escaping () -> NavItemContent,
+        done: @escaping (NavItemContent.Value) -> Void
+    )
+    -> some View {
+        modifier(SheetNavigation(isPresented: isPresented, content: content, done: done))
     }
 }
 
@@ -73,6 +120,19 @@ public final class NavigationItem<Content: NavigationItemContent>: AnyNavigation
                     linkIsActive = self.content.canActivateLink(value)
                 }
                 sideEffect?()
+            }
+            .store(in: &subscriptions)
+    }
+
+    public init(_ content: Content, done: @escaping (Content.Value?) -> Void) {
+        self.content = content
+        self.linksToDetails = false
+        super.init()
+
+        content.value.replaceErrorWithNil()
+            .sink { [unowned self] in
+                value = $0
+                done(value)
             }
             .store(in: &subscriptions)
     }
@@ -120,6 +180,11 @@ public struct NavigationItemView<Content: NavigationItemContent, NextView: View>
 public extension NavigationItemView where NextView == EmptyView {
     init(_ content: Content, sideEffect: (() -> Void)? = nil) {
         self.navigationItem = NavigationItem(content, linksToDetails: false, sideEffect: sideEffect)
+        self.nextView = { _, _ in EmptyView() }
+    }
+
+    init(_ content: Content, done: @escaping (Content.Value?) -> Void) {
+        self.navigationItem = NavigationItem(content, done: done)
         self.nextView = { _, _ in EmptyView() }
     }
 }

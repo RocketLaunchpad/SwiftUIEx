@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public func menuItem(destructive: Bool = false, text: String, iconName: String, action: @escaping () -> Void) -> some View {
+public func menuItem(destructive: Bool = false, text: String, iconName: String? = nil, action: @escaping () -> Void) -> some View {
     if #available(iOS 15, *) {
         return Button(
             role: destructive ? .destructive : nil,
@@ -15,7 +15,9 @@ public func menuItem(destructive: Bool = false, text: String, iconName: String, 
             label: {
                 HStack {
                     Text(text)
-                    Image(systemName: iconName)
+                    if let iconName = iconName {
+                        Image(systemName: iconName)
+                    }
                 }
             }
         )
@@ -24,7 +26,9 @@ public func menuItem(destructive: Bool = false, text: String, iconName: String, 
         return Button(action: action) {
             HStack {
                 Text(text)
-                Image(systemName: iconName)
+                if let iconName = iconName {
+                    Image(systemName: iconName)
+                }
             }
         }
     }
