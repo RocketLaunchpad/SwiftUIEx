@@ -53,13 +53,15 @@ public extension NavigationItemContent {
 // The closure type for `navContent` helps ensure that the sheet model is new on every presentation.
 public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifier {
     let isPresented: Binding<Bool>
-    let navContent: () -> NavItemContent
+    // The return type is optional because .sheet() is attached to a view unconditionally,
+    // even if the content cannot be constructed from the available data.
+    let navContent: () -> NavItemContent?
     let done: (NavItemContent.Value) -> Void
 
     // https://stackoverflow.com/questions/60485329/swiftui-modal-presentation-works-only-once-from-navigationbaritems
     @State private var contentID = UUID()
 
-    init(isPresented: Binding<Bool>, content: @escaping () -> NavItemContent, done: @escaping (NavItemContent.Value) -> Void) {
+    init(isPresented: Binding<Bool>, content: @escaping () -> NavItemContent?, done: @escaping (NavItemContent.Value) -> Void) {
         self.isPresented = isPresented
         navContent = content
         self.done = done
@@ -69,7 +71,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
         content
             .id(contentID)
             .sheet(isPresented: isPresented) {
-                navContent().done { value in
+                navContent()?.done { value in
                     contentID = UUID()
                     isPresented.wrappedValue = false
                     if let value = value {
@@ -83,7 +85,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
 public extension View {
     func sheet<NavItemContent: NavigationItemContent>(
         isPresented: Binding<Bool>,
-        content: @escaping () -> NavItemContent,
+        content: @escaping () -> NavItemContent?,
         done: @escaping (NavItemContent.Value) -> Void
     )
     -> some View {

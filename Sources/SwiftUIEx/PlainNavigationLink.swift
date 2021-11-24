@@ -14,7 +14,7 @@ public struct PlainNavigationLink<Label: View, Destination: View>: View {
 
     @State private var linkIsActive = false
 
-    public init(destination: @autoclosure @escaping () -> Destination, label: @escaping () -> Label) {
+    public init(destination: @autoclosure @escaping () -> Destination, @ViewBuilder label: @escaping () -> Label) {
         self.label = label
         self.destination = destination
     }
