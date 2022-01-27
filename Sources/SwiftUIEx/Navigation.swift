@@ -56,29 +56,60 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
     // The return type is optional because .sheet() is attached to a view unconditionally,
     // even if the content cannot be constructed from the available data.
     let navContent: () -> NavItemContent?
+    let fullScreen: Bool
+    let wrapInNavigationView: Bool
     let done: (NavItemContent.Value) -> Void
+    let onDismiss: () -> Void
 
-    // https://stackoverflow.com/questions/60485329/swiftui-modal-presentation-works-only-once-from-navigationbaritems
-    @State private var contentID = UUID()
-
-    init(isPresented: Binding<Bool>, content: @escaping () -> NavItemContent?, done: @escaping (NavItemContent.Value) -> Void) {
+    init(
+        isPresented: Binding<Bool>,
+        content: @escaping () -> NavItemContent?,
+        fullScreen: Bool = false,
+        wrapInNavigationView: Bool = false,
+        done: @escaping (NavItemContent.Value) -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
         self.isPresented = isPresented
         navContent = content
+        self.fullScreen = fullScreen
+        self.wrapInNavigationView = wrapInNavigationView
         self.done = done
+        self.onDismiss = onDismiss
     }                                                       
 
     public func body(content: Content) -> some View {
-        content
-            .id(contentID)
-            .sheet(isPresented: isPresented) {
-                navContent()?.done { value in
-                    contentID = UUID()
-                    isPresented.wrappedValue = false
-                    if let value = value {
-                        done(value)
-                    }
+        let presentedContent =
+            navContent()?.done { value in
+                isPresented.wrappedValue = false
+                if let value = value {
+                    done(value)
                 }
             }
+
+        if fullScreen {
+            content.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss) {
+                if wrapInNavigationView {
+                    NavigationView {
+                        presentedContent
+                    }
+                }
+                else {
+                    presentedContent
+                }
+            }
+        }
+        else {
+            content.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+                if wrapInNavigationView {
+                    NavigationView {
+                        presentedContent
+                    }
+                }
+                else {
+                    presentedContent
+                }
+            }
+        }
     }
 }
 
@@ -86,10 +117,70 @@ public extension View {
     func sheet<NavItemContent: NavigationItemContent>(
         isPresented: Binding<Bool>,
         content: @escaping () -> NavItemContent?,
+        fullScreen: Bool = false,
+        wrapInNavigationView: Bool = false,
+        done: @escaping (NavItemContent.Value) -> Void,
+        onDismiss: @escaping () -> Void
+    )
+    -> some View {
+        modifier(
+            SheetNavigation(
+                isPresented: isPresented,
+                content: content,
+                fullScreen: fullScreen,
+                wrapInNavigationView: wrapInNavigationView,
+                done: done,
+                onDismiss: onDismiss
+            )
+        )
+    }
+}
+
+// The overlay content may have the same structural identity, which would lead to showing the same data model
+// (or a reducer store) for the overlay every time the overlay is presented if `navContent` was a value.
+// The closure type for `navContent` helps ensure that the overlay model is new on every presentation.
+public struct BottomOverlayNavigation<NavItemContent: NavigationItemContent>: ViewModifier {
+    let isPresented: Binding<Bool>
+    // The return type is optional because .overlay() is attached to a view unconditionally,
+    // even if the content cannot be constructed from the available data.
+    let navContent: () -> NavItemContent?
+    let done: (NavItemContent.Value) -> Void
+
+    init(isPresented: Binding<Bool>, content: @escaping () -> NavItemContent?, done: @escaping (NavItemContent.Value) -> Void) {
+        self.isPresented = isPresented
+        navContent = content
+        self.done = done
+    }
+
+    public func body(content: Content) -> some View {
+        ZStack {
+            content
+                .zIndex(1)
+
+            if isPresented.wrappedValue {
+                navContent()?.done { value in
+                    withAnimation {
+                        isPresented.wrappedValue = false
+                    }
+                    if let value = value {
+                        done(value)
+                    }
+                }
+                .transition(.move(edge: .bottom))
+                .zIndex(2)
+            }
+        }
+    }
+}
+
+public extension View {
+    func bottomOverlay<NavItemContent: NavigationItemContent>(
+        isPresented: Binding<Bool>,
+        content: @escaping () -> NavItemContent?,
         done: @escaping (NavItemContent.Value) -> Void
     )
     -> some View {
-        modifier(SheetNavigation(isPresented: isPresented, content: content, done: done))
+        modifier(BottomOverlayNavigation(isPresented: isPresented, content: content, done: done))
     }
 }
 
