@@ -78,23 +78,24 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
     }                                                       
 
     public func body(content: Content) -> some View {
-        let presentedContent =
+        let presentedContent = {
             navContent()?.done { value in
                 isPresented.wrappedValue = false
                 if let value = value {
                     done(value)
                 }
             }
+        }
 
         if fullScreen {
             content.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss) {
                 if wrapInNavigationView {
                     NavigationView {
-                        presentedContent
+                        presentedContent()
                     }
                 }
                 else {
-                    presentedContent
+                    presentedContent()
                 }
             }
         }
@@ -102,11 +103,11 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
             content.sheet(isPresented: isPresented, onDismiss: onDismiss) {
                 if wrapInNavigationView {
                     NavigationView {
-                        presentedContent
+                        presentedContent()
                     }
                 }
                 else {
-                    presentedContent
+                    presentedContent()
                 }
             }
         }
