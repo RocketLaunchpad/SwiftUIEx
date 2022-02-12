@@ -52,7 +52,7 @@ public extension NavigationItemContent {
 // (or a reducer store) for the sheet every time the sheet is presented if `navContent` was a value.
 // The closure type for `navContent` helps ensure that the sheet model is new on every presentation.
 public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifier {
-    let isPresented: Binding<Bool>
+    @Binding var isPresented: Bool
     // The return type is optional because .sheet() is attached to a view unconditionally,
     // even if the content cannot be constructed from the available data.
     let navContent: () -> NavItemContent?
@@ -69,7 +69,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
         done: @escaping (NavItemContent.Value) -> Void,
         onDismiss: @escaping () -> Void
     ) {
-        self.isPresented = isPresented
+        _isPresented = isPresented
         navContent = content
         self.fullScreen = fullScreen
         self.wrapInNavigationView = wrapInNavigationView
@@ -80,7 +80,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
     public func body(content: Content) -> some View {
         let presentedContent = {
             navContent()?.done { value in
-                isPresented.wrappedValue = false
+                isPresented = false
                 if let value = value {
                     done(value)
                 }
@@ -88,7 +88,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
         }
 
         if fullScreen {
-            content.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss) {
+            content.fullScreenCover(isPresented: $isPresented, onDismiss: onDismiss) {
                 if wrapInNavigationView {
                     NavigationView {
                         presentedContent()
@@ -100,7 +100,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
             }
         }
         else {
-            content.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+            content.sheet(isPresented: $isPresented, onDismiss: onDismiss) {
                 if wrapInNavigationView {
                     NavigationView {
                         presentedContent()
@@ -141,36 +141,64 @@ public extension View {
 // (or a reducer store) for the overlay every time the overlay is presented if `navContent` was a value.
 // The closure type for `navContent` helps ensure that the overlay model is new on every presentation.
 public struct BottomOverlayNavigation<NavItemContent: NavigationItemContent>: ViewModifier {
-    let isPresented: Binding<Bool>
+    @Binding var isPresented: Bool
     // The return type is optional because .overlay() is attached to a view unconditionally,
     // even if the content cannot be constructed from the available data.
     let navContent: () -> NavItemContent?
     let done: (NavItemContent.Value) -> Void
 
     init(isPresented: Binding<Bool>, content: @escaping () -> NavItemContent?, done: @escaping (NavItemContent.Value) -> Void) {
-        self.isPresented = isPresented
+        _isPresented = isPresented
         navContent = content
         self.done = done
     }
 
     public func body(content: Content) -> some View {
         ZStack {
+            let slideAnimation: Animation = .spring()
+
             content
                 .zIndex(1)
 
-            if isPresented.wrappedValue {
-                navContent()?.done { value in
-                    withAnimation {
-                        isPresented.wrappedValue = false
-                    }
-                    if let value = value {
-                        done(value)
-                    }
+            VStack {
+                if isPresented {
+                    Color.black.opacity(0.1)
+                        .ignoresSafeArea()
+                        .onTapGesture {
+                            withAnimation {
+                                isPresented = false
+                            }
+                        }
                 }
-                .transition(.move(edge: .bottom))
-                .zIndex(2)
             }
+            .transition(.opacity)
+            .transaction {
+                $0.animation = slideAnimation
+            }
+            .zIndex(2)
+
+            VStack {
+                Spacer()
+                if isPresented {
+                    navContent()?.done { value in
+                        withAnimation {
+                            isPresented = false
+                        }
+                        if let value = value {
+                            done(value)
+                        }
+                    }
+                    .transition(.move(edge: .bottom))
+                    .transaction {
+                        $0.animation = slideAnimation
+                    }
+                    .compositingGroup()
+                    .shadow(radius: 3)
+                }
+            }
+            .zIndex(3)
         }
+        .ignoresSafeArea()
     }
 }
 
