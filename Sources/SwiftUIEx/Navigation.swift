@@ -203,13 +203,27 @@ public struct BottomOverlayNavigation<NavItemContent: NavigationItemContent>: Vi
 }
 
 public extension View {
+    @ViewBuilder
     func bottomOverlay<NavItemContent: NavigationItemContent>(
+        useSheet: Bool = false,
         isPresented: Binding<Bool>,
         content: @escaping () -> NavItemContent?,
         done: @escaping (NavItemContent.Value) -> Void
     )
     -> some View {
-        modifier(BottomOverlayNavigation(isPresented: isPresented, content: content, done: done))
+        if useSheet {
+            sheet(
+                isPresented: isPresented,
+                content: content,
+                fullScreen: true,
+                wrapInNavigationView: false,
+                done: done,
+                onDismiss: {}
+            )
+        }
+        else {
+            modifier(BottomOverlayNavigation(isPresented: isPresented, content: content, done: done))
+        }
     }
 }
 
