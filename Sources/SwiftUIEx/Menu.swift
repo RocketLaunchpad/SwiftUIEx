@@ -9,7 +9,8 @@ import SwiftUI
 
 public func menuItem(
     destructive: Bool = false,
-    text: String, iconName: String? = nil,
+    text: String,
+    iconName: String? = nil,
     disabled: Bool = false,
     action: @escaping () -> Void
 )
