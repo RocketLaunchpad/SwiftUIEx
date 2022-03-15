@@ -347,11 +347,44 @@ public struct NavigationRow<V: View>: View {
             HStack {
                 label
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.secondary)
+                Image(systemName:"chevron.right")
+                    .foregroundColor(.systemGray3)
+                    .font(.body.weight(.semibold))
+                    .padding(.horizontal, 15)
             }
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(NavigationCellButtonStyle())
+    }
+}
+
+public struct NavigationRowLink<V: View, D: View>: View {
+    @Binding var linkIsActive: Bool
+    public let label: V
+    public let destination: D
+
+    public init(isActive: Binding<Bool>, @ViewBuilder label: () -> V, @ViewBuilder destination: () -> D) {
+        self._linkIsActive = isActive
+        self.label = label()
+        self.destination = destination()
+    }
+
+    public init(isActive: Binding<Bool>, @ViewBuilder destination: () -> D) where V == EmptyView {
+        self._linkIsActive = isActive
+        self.label = EmptyView()
+        self.destination = destination()
+    }
+
+    public var body: some View {
+        VStack(spacing: 0) {
+            NavigationRow(action: { linkIsActive = true }, label: label)
+            NavigationLink(isActive: _linkIsActive, destination: { destination }, label: { EmptyView() })
+        }
+    }
+}
+
+public struct NavigationCellButtonStyle: ButtonStyle {
+    public func makeBody(configuration config: Configuration) -> some View {
+        config.label.background(config.isPressed ? Color.systemGray5 : .clear )
     }
 }
