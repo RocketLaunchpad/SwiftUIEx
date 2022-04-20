@@ -27,8 +27,19 @@ public extension NavigationItemContent {
 }
 
 public extension NavigationItemContent {
-    func then<V: View>(@ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V) -> NavigationItemView<Self, V> {
-        NavigationItemView(self, next: next)
+    func then<V: View>(
+        cancel: @escaping () -> Void,
+        @ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V
+    )
+    -> NavigationItemView<Self, V> {
+        NavigationItemView(self, next: next, cancel: cancel)
+    }
+
+    func then<V: View>(
+        @ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V
+    )
+    -> NavigationItemView<Self, V> {
+        NavigationItemView(self, next: next, cancel: nil)
     }
 
     func thenDetails<V: View>(@ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V) -> NavigationItemView<Self, V> {
@@ -282,10 +293,17 @@ public final class NavigationItem<Content: NavigationItemContent>: AnyNavigation
 public struct NavigationItemView<Content: NavigationItemContent, NextView: View>: View {
     @ObservedObject public var navigationItem: NavigationItem<Content>
     public let nextView: (Content.Value, AnyNavigationItem) -> NextView
+    public var cancel: (() -> Void)?
 
-    public init(_ content: Content, linksToDetails: Bool = false, @ViewBuilder next: @escaping (Content.Value, AnyNavigationItem) -> NextView) {
+    public init(
+        _ content: Content, linksToDetails: Bool = false,
+        @ViewBuilder next: @escaping (Content.Value, AnyNavigationItem) -> NextView,
+        cancel: (() -> Void)? = nil
+    )
+    {
         self.navigationItem = NavigationItem(content, linksToDetails: linksToDetails)
         self.nextView = next
+        self.cancel = cancel
     }
 
     @ViewBuilder
@@ -308,6 +326,11 @@ public struct NavigationItemView<Content: NavigationItemContent, NextView: View>
                     label: { EmptyView() }
                 )
                 .isDetailLink(navigationItem.linksToDetails)
+            }
+        }
+        .onReceive(navigationItem.$value.dropFirst()) { value in
+            if value == nil {
+                cancel?()
             }
         }
     }
