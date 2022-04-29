@@ -16,42 +16,32 @@ public protocol NavigationItemContent: Identifiable {
 
     func makeView() -> ContentView
     var value: AnyPublisher<Value, Cancel> { get }
-
-    func canActivateLink(_ value: Value) -> Bool
 }
 
-public extension NavigationItemContent {
-    func canActivateLink(_ value: Value) -> Bool {
-        true
-    }
+public enum NavigationItemLinkAction {
+    case activateLink
+    case endFlow
 }
 
 public extension NavigationItemContent {
     func then<V: View>(
-        cancel: @escaping () -> Void,
+        sideEffect: ((Value?) -> NavigationItemLinkAction)? = nil,
         @ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V
     )
     -> NavigationItemView<Self, V> {
-        NavigationItemView(self, next: next, cancel: cancel)
-    }
-
-    func then<V: View>(
-        @ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V
-    )
-    -> NavigationItemView<Self, V> {
-        NavigationItemView(self, next: next, cancel: nil)
+        NavigationItemView(self, sideEffect: sideEffect, next: next)
     }
 
     func thenDetails<V: View>(@ViewBuilder next: @escaping (Value, AnyNavigationItem) -> V) -> NavigationItemView<Self, V> {
         NavigationItemView(self, linksToDetails: true, next: next)
     }
 
-    func endFlow(with sideEffect: (() -> Void)? = nil) -> NavigationItemView<Self, EmptyView> {
+    func endFlow(with sideEffect: ((Value?) -> Void)? = nil) -> NavigationItemView<Self, EmptyView> {
         NavigationItemView(self, sideEffect: sideEffect)
     }
 
     func thenPop(to item: AnyNavigationItem) -> some View {
-        endFlow { item.deactivateLink() }
+        endFlow { _ in item.deactivateLink() }
     }
 
     func done(_ done: @escaping (Value?) -> Void) -> NavigationItemView<Self, EmptyView> {
@@ -255,7 +245,7 @@ public final class NavigationItem<Content: NavigationItemContent>: AnyNavigation
     @Published public var linkIsActive = false
     @Published var value: Content.Value?
 
-    public init(_ content: Content, linksToDetails: Bool, sideEffect: (() -> Void)? = nil) {
+    public init(_ content: Content, linksToDetails: Bool, sideEffect: ((Content.Value?) -> NavigationItemLinkAction)? = nil) {
         self.content = content
         self.linksToDetails = linksToDetails
         super.init()
@@ -263,10 +253,10 @@ public final class NavigationItem<Content: NavigationItemContent>: AnyNavigation
         content.value.replaceErrorWithNil()
             .sink { [unowned self] in
                 value = $0
-                if let value = value {
-                    linkIsActive = self.content.canActivateLink(value)
+                let linkAction = sideEffect?(value) ?? .activateLink
+                if value != nil, linkAction == .activateLink {
+                    linkIsActive = true
                 }
-                sideEffect?()
             }
             .store(in: &subscriptions)
     }
@@ -293,17 +283,15 @@ public final class NavigationItem<Content: NavigationItemContent>: AnyNavigation
 public struct NavigationItemView<Content: NavigationItemContent, NextView: View>: View {
     @ObservedObject public var navigationItem: NavigationItem<Content>
     public let nextView: (Content.Value, AnyNavigationItem) -> NextView
-    public var cancel: (() -> Void)?
 
     public init(
         _ content: Content, linksToDetails: Bool = false,
-        @ViewBuilder next: @escaping (Content.Value, AnyNavigationItem) -> NextView,
-        cancel: (() -> Void)? = nil
+        sideEffect: ((Content.Value?) -> NavigationItemLinkAction)? = nil,
+        @ViewBuilder next: @escaping (Content.Value, AnyNavigationItem) -> NextView
     )
     {
-        self.navigationItem = NavigationItem(content, linksToDetails: linksToDetails)
+        self.navigationItem = NavigationItem(content, linksToDetails: linksToDetails, sideEffect: sideEffect)
         self.nextView = next
-        self.cancel = cancel
     }
 
     @ViewBuilder
@@ -328,17 +316,16 @@ public struct NavigationItemView<Content: NavigationItemContent, NextView: View>
                 .isDetailLink(navigationItem.linksToDetails)
             }
         }
-        .onReceive(navigationItem.$value.dropFirst()) { value in
-            if value == nil {
-                cancel?()
-            }
-        }
     }
 }
 
 public extension NavigationItemView where NextView == EmptyView {
-    init(_ content: Content, sideEffect: (() -> Void)? = nil) {
-        self.navigationItem = NavigationItem(content, linksToDetails: false, sideEffect: sideEffect)
+    init(_ content: Content, sideEffect: ((Content.Value?) -> Void)? = nil) {
+        self.navigationItem = NavigationItem(
+            content,
+            linksToDetails: false,
+            sideEffect: sideEffect.map { f in { f($0); return .endFlow } }
+        )
         self.nextView = { _, _ in EmptyView() }
     }
 
