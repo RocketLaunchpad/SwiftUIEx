@@ -44,6 +44,7 @@ public struct MenuButton: UIViewRepresentable {
     let title: String
     let image: UIImage?
     let color: UIColor
+    let padding: CGFloat
 
     let items: [UIMenuElement]
 
@@ -53,6 +54,7 @@ public struct MenuButton: UIViewRepresentable {
         imageName: String? = nil,
         color: Color = Color.accentColor,
         fontSize: CGFloat? = nil,
+        padding: CGFloat = 0,
         items: [UIMenuElement]
     ) {
         self.title = title
@@ -75,11 +77,13 @@ public struct MenuButton: UIViewRepresentable {
         }
 
         self.color = .init(color)
+        self.padding = padding
         self.items = items
     }
 
-    public func makeUIView(context: Context) -> some UIView {
+    public func makeButton() -> UIButton {
         let button = UIButton()
+        button.contentEdgeInsets = .init(top: padding, left: padding, bottom: padding, right: padding)
         button.setContentHuggingPriority(.required, for: .horizontal)
         button.setContentHuggingPriority(.required, for: .vertical)
 
@@ -94,6 +98,10 @@ public struct MenuButton: UIViewRepresentable {
         button.showsMenuAsPrimaryAction = true
 
         return button
+    }
+
+    public func makeUIView(context: Context) -> some UIView {
+        makeButton()
     }
 
     public func updateUIView(_ uiView: UIViewType, context: Context) {
