@@ -94,6 +94,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
                     NavigationView {
                         presentedContent()
                     }
+                    .navigationViewStyle(.stack)
                 }
                 else {
                     presentedContent()
@@ -106,6 +107,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
                     NavigationView {
                         presentedContent()
                     }
+                    .navigationViewStyle(.stack)
                 }
                 else {
                     presentedContent()
