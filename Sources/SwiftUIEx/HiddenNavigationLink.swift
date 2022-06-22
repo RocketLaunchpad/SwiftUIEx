@@ -12,7 +12,7 @@ public struct HiddenNavigationLink<Destination: View>: View {
     @Binding var linkIsActive: Bool
     let destination: () -> Destination?
 
-    public init(isActive: Binding<Bool>, destination: @autoclosure @escaping () -> Destination) {
+    public init(isActive: Binding<Bool>, @ViewBuilder destination: @escaping () -> Destination) {
         self._linkIsActive = isActive
         self.destination = destination
     }
