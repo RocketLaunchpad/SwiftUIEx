@@ -23,6 +23,7 @@ public enum NavigationItemLinkAction {
     case endFlow
 }
 
+@MainActor
 public extension NavigationItemContent {
     func then<V: View>(
         sideEffect: ((Value?) -> NavigationItemLinkAction)? = nil,
@@ -230,6 +231,7 @@ public extension View {
     }
 }
 
+@MainActor
 public class AnyNavigationItem {
     func deactivateLink() {}
 
@@ -239,6 +241,7 @@ public class AnyNavigationItem {
     }
 }
 
+@MainActor
 public final class NavigationItem<Content: NavigationItemContent>: AnyNavigationItem, ObservableObject {
     public let content: Content
     public let linksToDetails: Bool
