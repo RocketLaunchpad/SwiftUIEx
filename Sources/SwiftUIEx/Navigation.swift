@@ -10,7 +10,7 @@ import Combine
 import CombineEx
 import SwiftUI
 
-public protocol NavigationItemContent: Identifiable {
+public protocol NavigationItemContent {
     associatedtype ContentView: View
     associatedtype Value
 
@@ -50,9 +50,6 @@ public extension NavigationItemContent {
     }
 }
 
-// The sheet content may have the same structural identity, which would lead to showing the same data model
-// (or a reducer store) for the sheet every time the sheet is presented if `navContent` was a value.
-// The closure type for `navContent` helps ensure that the sheet model is new on every presentation.
 public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifier {
     @Binding var isPresented: Bool
     // The return type is optional because .sheet() is attached to a view unconditionally,
