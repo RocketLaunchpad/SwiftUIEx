@@ -256,6 +256,11 @@ public struct NavigationRow<V: View>: View {
         self.action = action
     }
 
+    public init(action: @escaping () -> Void, label: () -> V) {
+        self.label = label()
+        self.action = action
+    }
+
     public init(_ titleKey: LocalizedStringKey, action: @escaping () -> Void) where V == Text {
         self.init(action: action, label: Text(titleKey))
     }
@@ -272,11 +277,11 @@ public struct NavigationRow<V: View>: View {
                 Image(systemName:"chevron.right")
                     .foregroundColor(.systemGray3)
                     .font(.body.weight(.semibold))
-                    .padding(.horizontal, 15)
+                    .padding(.leading)
             }
             .contentShape(Rectangle())
+            .foregroundColor(.label)
         }
-        .buttonStyle(NavigationCellButtonStyle())
     }
 }
 
@@ -302,11 +307,5 @@ public struct NavigationRowLink<V: View, D: View>: View {
             NavigationRow(action: { linkIsActive = true }, label: label)
             NavigationLink(isActive: _linkIsActive, destination: { destination }, label: { EmptyView() })
         }
-    }
-}
-
-public struct NavigationCellButtonStyle: ButtonStyle {
-    public func makeBody(configuration config: Configuration) -> some View {
-        config.label.background(config.isPressed ? Color.systemGray5 : .clear )
     }
 }
