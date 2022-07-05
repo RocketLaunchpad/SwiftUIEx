@@ -60,6 +60,8 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
     let done: (NavItemContent.Value) -> Void
     let onDismiss: () -> Void
 
+    @State private var currentNavContentValue: NavItemContent?
+
     init(
         isPresented: Binding<Bool>,
         content: @escaping () -> NavItemContent?,
@@ -77,25 +79,30 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
     }                                                       
 
     public func body(content: Content) -> some View {
-        let presentedContent = {
-            navContent()?.done { value in
-                isPresented = false
-                if let value = value {
-                    done(value)
-                }
+        let navContentValue = currentNavContentValue ?? navContent()
+        let presentedContent = navContentValue?.done { value in
+            isPresented = false
+            if let value = value {
+                done(value)
             }
+        }
+        .onAppear {
+            currentNavContentValue = navContentValue
+        }
+        .onDisappear {
+            currentNavContentValue = nil
         }
 
         if fullScreen {
             content.fullScreenCover(isPresented: $isPresented, onDismiss: onDismiss) {
                 if wrapInNavigationView {
                     NavigationView {
-                        presentedContent()
+                        presentedContent
                     }
                     .navigationViewStyle(.stack)
                 }
                 else {
-                    presentedContent()
+                    presentedContent
                 }
             }
         }
@@ -103,12 +110,12 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
             content.sheet(isPresented: $isPresented, onDismiss: onDismiss) {
                 if wrapInNavigationView {
                     NavigationView {
-                        presentedContent()
+                        presentedContent
                     }
                     .navigationViewStyle(.stack)
                 }
                 else {
-                    presentedContent()
+                    presentedContent
                 }
             }
         }
