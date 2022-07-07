@@ -76,7 +76,12 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
         self.wrapInNavigationView = wrapInNavigationView
         self.done = done
         self.onDismiss = onDismiss
-    }                                                       
+    }
+
+    func onDismissImpl() {
+        onDismiss()
+        currentNavContentValue = nil
+    }
 
     public func body(content: Content) -> some View {
         let navContentValue = currentNavContentValue ?? navContent()
@@ -89,12 +94,9 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
         .onAppear {
             currentNavContentValue = navContentValue
         }
-        .onDisappear {
-            currentNavContentValue = nil
-        }
 
         if fullScreen {
-            content.fullScreenCover(isPresented: $isPresented, onDismiss: onDismiss) {
+            content.fullScreenCover(isPresented: $isPresented, onDismiss: onDismissImpl) {
                 if wrapInNavigationView {
                     NavigationView {
                         presentedContent
@@ -107,7 +109,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
             }
         }
         else {
-            content.sheet(isPresented: $isPresented, onDismiss: onDismiss) {
+            content.sheet(isPresented: $isPresented, onDismiss: onDismissImpl) {
                 if wrapInNavigationView {
                     NavigationView {
                         presentedContent
