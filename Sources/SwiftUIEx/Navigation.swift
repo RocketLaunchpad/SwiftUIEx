@@ -86,6 +86,7 @@ public struct SheetNavigation<NavItemContent: NavigationItemContent>: ViewModifi
     public func body(content: Content) -> some View {
         let navContentValue = currentNavContentValue ?? navContent()
         let presentedContent = navContentValue?.done { value in
+            guard isPresented else { return }
             isPresented = false
             if let value = value {
                 done(value)
