@@ -7,22 +7,55 @@
 
 import SwiftUI
 
-public struct MasterDetailView<Master: View, Detail: View>: View {
-    let master: Master
-    let detail: Detail
-    let masterWidth: CGFloat
+public protocol DetailView: View {
+    var showBackButton: Bool { get set }
+    var backAction: () -> Void { get set }
+}
 
-    public init(master: Master, detail: Detail, masterWidth: CGFloat = 375) {
-        self.master = master
-        self.detail = detail
+public struct MasterDetailView<Master: View, Detail: DetailView>: View {
+    let master: Master
+    var detail: Detail
+    let masterWidth: CGFloat
+    let showAll: Bool
+    
+    @Binding var showDetail: Bool
+    
+    public init(master: () -> Master, detail: () -> Detail, masterWidth: CGFloat = 375, showAll: Bool, showDetail: Binding<Bool>) {
+        self.master = master()
+        self.detail = detail()
+        self.detail.showBackButton = !showAll
+        self.detail.backAction = { showDetail.wrappedValue = false }
         self.masterWidth = masterWidth
+        self.showAll = showAll
+        self._showDetail = showDetail
     }
 
     public var body: some View {
-        HStack(spacing: 0) {
-            master.frame(width: masterWidth)
-            Divider()
-            detail
+        GeometryReader { proxy in
+            ZStack {
+                master
+                    .frame(width: showAll ? masterWidth : nil)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .zIndex(0)
+                
+                if showAll {
+                    HStack {
+                        Spacer()
+                            .frame(width: masterWidth)
+                        Divider()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .zIndex(2)
+                }
+                
+                if showDetail || showAll {
+                    detail
+                        .frame(width: showAll ? proxy.size.width - masterWidth : nil)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                        .zIndex(1)
+                        .transition(showAll ? .identity : .move(edge: .trailing))
+                }
+            }
         }
     }
 }
