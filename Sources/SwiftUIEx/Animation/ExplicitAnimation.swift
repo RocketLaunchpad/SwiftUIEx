@@ -68,6 +68,8 @@ public extension ExplicitAnimation.Trigger {
 
 public extension ExplicitAnimation.ScaledValueEvaluator where T == Double {
     static let identity: Self = .init { $0 }
+    
+    static let radians: Self = .init { 2 * .pi * $0 }
 }
 
 public extension ExplicitAnimation.ProgressEvaluator {
@@ -96,6 +98,21 @@ public extension ExplicitAnimation.ProgressEvaluator {
         }
         else {
             return 1 - 4.0 * (1 - x)
+        }
+    }
+    
+    static let damped_oscillations_3: Self = .init { x in
+        if x < 1.0 / 4.0 {
+            return (1.0 / 2.0) * sin(4 * .pi * x - .pi / 2.0) + (1.0 / 2.0)
+        }
+        else if x < 2.0 / 4.0 {
+            return (3.0 / 4.0) * sin(4 * .pi * x - .pi / 2.0) + (1.0 / 4.0)
+        }
+        else if x < 3.0 / 4.0 {
+            return (3.0 / 8.0) * sin(4 * .pi * x - .pi / 2.0) - (1.0 / 8.0)
+        }
+        else {
+            return (1.0 / 8.0) * sin(4 * .pi * x - .pi / 2.0) + (1.0 / 8.0)
         }
     }
 }
@@ -129,3 +146,46 @@ public extension View {
         modifier(AnimatedOpacityTriggerModifier(trigger: trigger, progressEvaluator: progressEvaluator))
     }
 }
+
+// MARK: Z Rotation
+
+public struct AnimationZRotationModifier: ViewModifier {
+    public let value: Double
+
+    public func body(content: Content) -> some View {
+        content.rotationEffect(.init(radians: value))
+    }
+}
+
+public enum ZRotationModifierProvider: ExplicitAnimationModifierProvider {
+    public static func modifier(value: Double) -> AnimationZRotationModifier {
+        .init(value: value)
+    }
+}
+
+public typealias AnimatedZRotationTriggerModifier = ExplicitAnimation.TriggerModifier<ZRotationModifierProvider>
+
+extension AnimatedZRotationTriggerModifier {
+    init(maxAngle: Double, trigger: ExplicitAnimation.Trigger, progressEvaluator: ExplicitAnimation.ProgressEvaluator) {
+        self.init(
+            trigger: trigger,
+            progressEvaluator: progressEvaluator,
+            scaledValueEvaluator: .init { x in
+                maxAngle * x
+            }
+        )
+    }
+}
+
+public extension View {
+    func animatedZRotation(
+        maxAngle: Double,
+        trigger: ExplicitAnimation.Trigger, progressEvaluator:
+        ExplicitAnimation.ProgressEvaluator
+    )
+    -> some View
+    {
+        modifier(AnimatedZRotationTriggerModifier(maxAngle: maxAngle, trigger: trigger, progressEvaluator: progressEvaluator))
+    }
+}
+
