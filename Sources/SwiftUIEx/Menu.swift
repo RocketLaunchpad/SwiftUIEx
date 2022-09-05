@@ -32,6 +32,32 @@ public func menuItem(
     )
 }
 
+public func menuItem(
+    destructive: Bool = false,
+    text: String,
+    imageSystemName: String? = nil,
+    imageName: String? = nil,
+    disabled: Bool = false,
+    action: @escaping () -> Void
+)
+-> UIAction
+{
+    var attributes: UIMenuElement.Attributes = []
+    if destructive {
+        attributes.insert(.destructive)
+    }
+    if disabled {
+        attributes.insert(.disabled)
+    }
+
+    return .init(
+        title: text,
+        image: imageName.flatMap { UIImage(named: $0) } ?? imageSystemName.flatMap { UIImage(systemName: $0) },
+        attributes: attributes,
+        handler: { _ in action() }
+    )
+}
+
 public func submenuItem(text: String, iconName: String? = nil, items: [UIMenuElement]) -> UIMenu {
     .init(
         title: text,
