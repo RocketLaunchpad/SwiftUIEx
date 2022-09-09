@@ -102,18 +102,30 @@ public extension ExplicitAnimation.ProgressEvaluator {
     }
     
     static let damped_oscillations_3: Self = .init { x in
+        // break up each expresion to improve the compilation time
+        let a, b, c: Double
+        let pi = Double.pi
         if x < 1.0 / 4.0 {
-            return (1.0 / 2.0) * sin(4 * .pi * x - .pi / 2.0) + (1.0 / 2.0)
+            a = 1.0 / 2.0
+            b = sin(4.0 * pi * x - pi / 2.0)
+            c = 1.0 / 2.0
         }
         else if x < 2.0 / 4.0 {
-            return (3.0 / 4.0) * sin(4 * .pi * x - .pi / 2.0) + (1.0 / 4.0)
+            a = (3.0 / 4.0)
+            b = sin(4 * pi * x - pi / 2)
+            c = 1.0 / 4.0
         }
         else if x < 3.0 / 4.0 {
-            return (3.0 / 8.0) * sin(4 * .pi * x - .pi / 2.0) - (1.0 / 8.0)
+            a = (3.0 / 8.0)
+            b = sin(4 * pi * x - pi / 2)
+            c = -(1.0 / 8.0)
         }
         else {
-            return (1.0 / 8.0) * sin(4 * .pi * x - .pi / 2.0) + (1.0 / 8.0)
+            a = 1.0 / 8.0
+            b = sin(4 * pi * x - pi / 2)
+            c = 1.0 / 8.0
         }
+        return a * b + c
     }
 }
 
