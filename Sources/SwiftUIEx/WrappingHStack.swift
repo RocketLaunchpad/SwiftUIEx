@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FoundationEx
 import Tagged
 
 public struct WrappingHStack<Data, Cell>: View where Data: RandomAccessCollection, Data.Element: Identifiable, Cell: View {
@@ -24,7 +25,7 @@ public struct WrappingHStack<Data, Cell>: View where Data: RandomAccessCollectio
     let rowAlignment: VerticalAlignment
     let spacing: CGFloat
     let rowSpacing: CGFloat
-    let data: Data
+    let data: [Data.Element]
     let cellFunc: (Data.Element) -> Cell
 
     @State private var cellSizes: [Data.Element.ID: CGSize] = [:]
@@ -105,13 +106,26 @@ public struct WrappingHStack<Data, Cell>: View where Data: RandomAccessCollectio
         rowAlignment: VerticalAlignment = .center,
         spacing: CGFloat = 10,
         rowSpacing: CGFloat? = nil,
-        _ data: Data,
+        _ dataContent: Data,
         content: @escaping (Data.Element) -> Cell
     ) {
         self.rowAlignment = rowAlignment
         self.spacing = spacing
         self.rowSpacing = rowSpacing ?? spacing
+
+        var data: [Data.Element] = []
+        for elem in dataContent {
+            // inefficient, but most flexible and should not be a problem for a small collection
+            // that WrappingHStack is meant to display.
+            if !data.contains(where: {$0.id == elem.id }) {
+                data.append(elem)
+            }
+            else {
+                SwiftUIEx.env.logCodingError("WrappingHStack expected elements with unique IDs. Found duplicate ID: \(elem.id)")
+            }
+        }
         self.data = data
+
         self.cellFunc = content
     }
 
