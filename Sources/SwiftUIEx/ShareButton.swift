@@ -28,6 +28,8 @@ public struct ShareButton: UIViewRepresentable {
             self.excludedActivityTypes = excludedActivityTypes
         }
     }
+    
+    @Environment(\.isEnabled) var isEnabled
 
     @Binding var isPresented: Bool
     let action: () -> Void
@@ -52,6 +54,7 @@ public struct ShareButton: UIViewRepresentable {
         }
         
         view.shareContext = shareContext
+        view.vc.updateIsEnabled(isEnabled)
         if isPresented {
             view.vc.showShareSheet()
         }
@@ -130,6 +133,10 @@ public class ShareButtonVC: UIViewController {
         if !menuItems.isEmpty {
             button.menu = UIMenu(children: menuItems)
         }
+    }
+    
+    func updateIsEnabled(_ value: Bool) {
+        button.isEnabled = value
     }
     
     @IBAction func runAction() {
