@@ -12,6 +12,10 @@ public protocol DetailView: View {
     var backAction: () -> Void { get set }
 }
 
+public extension Animation {
+    static let slide: Self = spring(response: 0.3, dampingFraction: 1)
+}
+
 public struct MasterDetailView<Master: View, Detail: DetailView>: View {
     let master: Master
     var detail: Detail
