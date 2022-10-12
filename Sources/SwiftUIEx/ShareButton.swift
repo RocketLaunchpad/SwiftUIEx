@@ -153,6 +153,14 @@ public class ShareButtonVC: UIViewController {
     func hideShareSheetIfNeeded() {
         presentedViewController?.dismiss(animated: true)
     }
+    
+    public override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
+        super.dismiss(animated: flag) { [weak self] in
+            completion?()
+            self?.coordinator.parent.isPresented = false
+        }
+    }
+
 }
 
 fileprivate class ShareSheetVC: UIActivityViewController {
@@ -162,12 +170,5 @@ fileprivate class ShareSheetVC: UIActivityViewController {
         self.coordinator = coordinator
         super.init(activityItems: shareContext.activityItems, applicationActivities: shareContext.applicationActivities)
         excludedActivityTypes = shareContext.excludedActivityTypes
-    }
-    
-    override func dismiss(animated flag: Bool, completion: (() -> Void)? = nil) {
-        super.dismiss(animated: flag) { [weak self] in
-            completion?()
-            self?.coordinator.parent.isPresented = false
-        }
     }
 }
