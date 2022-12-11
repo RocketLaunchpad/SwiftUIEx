@@ -198,7 +198,9 @@ public final class NavigationItem<Content: NavigationItemContent>: AnyNavigation
 
     override func deactivateLink() {
         super.deactivateLink()
-        linkIsActive = false
+        DispatchQueue.main.async {
+            self.linkIsActive = false
+        }
     }
 }
 

@@ -12,7 +12,9 @@ public struct ShowIf: ViewModifier {
     public let animation: Animation?
 
     public func body(content: Content) -> some View {
-        content.opacity(value ? 1 : 0).animation(animation, value: value)
+        if value {
+            content.transition(.opacity.animation(animation))
+        }
     }
 }
 
